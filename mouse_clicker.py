@@ -4,7 +4,7 @@ from pynput.mouse import Button, Controller
 from pynput.keyboard import Listener, KeyCode
 
 
-delay = 0.2  # затримка міжa
+delay = 0.2
 button = Button.left
 control_key = KeyCode(char='a')
 stop_key = KeyCode(char='b')
