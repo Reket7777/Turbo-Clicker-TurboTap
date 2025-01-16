@@ -2,12 +2,12 @@ import time
 import threading
 from pynput.mouse import Button, Controller
 from pynput.keyboard import Listener, KeyCode
+from termcolor import colored
 
-
-delay = 0.2
-button = Button.left
-control_key = KeyCode(char='a')
-stop_key = KeyCode(char='b')
+delay = 0.2                         # delay in seconds
+button = Button.left                # button to click
+control_key = KeyCode(char='a')     # key to start/pause clicking
+stop_key = KeyCode(char='b')        # key to stop the program
 
 
 class ClickMouse(threading.Thread):
@@ -45,13 +45,18 @@ def on_press(key):
     if key == control_key:
         if click_thread.running:
             click_thread.stop_clicking()
+            print(f"Clicking paused, press {colored(control_key, "green")} to start again.")
         else:
             click_thread.start_clicking()
+            print(f"Clicking started, press {colored(control_key, "green")} to pause.")
 
     elif key == stop_key:
+        print('Exiting...')
         click_thread.exit()
         listener.stop()
 
 
 with Listener(on_press=on_press) as listener:
+    print(f"Press {colored(control_key, "green")} to start or pause clicking.")
+    print(f"Press {colored(stop_key, "red")} to stop the program.")
     listener.join()
