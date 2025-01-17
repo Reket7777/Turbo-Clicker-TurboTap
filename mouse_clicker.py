@@ -3,6 +3,8 @@ import threading
 from pynput.mouse import Button, Controller
 from pynput.keyboard import Listener, KeyCode
 from termcolor import colored
+from loguru import logger
+
 
 delay = 0.2                         # delay in seconds
 button = Button.left                # button to click
@@ -45,18 +47,18 @@ def on_press(key):
     if key == control_key:
         if click_thread.running:
             click_thread.stop_clicking()
-            print(f"Clicking paused, press {colored(control_key, "green")} to start again.")
+            logger.warning(f"Clicking paused, press {control_key} to start again.")
         else:
             click_thread.start_clicking()
-            print(f"Clicking started, press {colored(control_key, "green")} to pause.")
+            logger.success(f"Clicking started, press {control_key} to pause.")
 
     elif key == stop_key:
-        print('Exiting...')
+        logger.info('Exiting...')
         click_thread.exit()
         listener.stop()
 
 
 with Listener(on_press=on_press) as listener:
-    print(f"Press {colored(control_key, "green")} to start or pause clicking.")
-    print(f"Press {colored(stop_key, "red")} to stop the program.")
+    logger.info(f"Press {colored(control_key, "green")} to start or pause clicking.")
+    logger.info(f"Press {colored(stop_key, "red")} to stop the program.")
     listener.join()
