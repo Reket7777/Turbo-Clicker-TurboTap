@@ -1,12 +1,28 @@
 import time
 import threading
+import random
+import sys
 from pynput.mouse import Button, Controller
 from pynput.keyboard import Listener, KeyCode
 from termcolor import colored
 from loguru import logger
 
 
-delay = 0.2                         # delay in seconds
+# ___ logger settings ___
+logger.remove()
+logger.add(
+    sys.stdout,
+    format="{time:DD-MM-YYYY > HH:mm:ss} | <level>{level: <7}</level> | {message}",
+    colorize=True,
+)
+
+# ____ delay settings ____
+min_delay = 0.2                     # min delay in seconds
+max_delay = 0.6                     # max delay in seconds
+random_delay = random.uniform(min_delay, max_delay)
+delay = random_delay
+
+# ____ button settings ____
 button = Button.left                # button to click
 control_key = KeyCode(char='a')     # key to start/pause clicking
 stop_key = KeyCode(char='b')        # key to stop the program
@@ -35,7 +51,6 @@ class ClickMouse(threading.Thread):
             while self.running:
                 mouse.click(self.button)
                 time.sleep(self.delay)
-            time.sleep(0.05)
 
 
 mouse = Controller()
@@ -47,10 +62,10 @@ def on_press(key):
     if key == control_key:
         if click_thread.running:
             click_thread.stop_clicking()
-            logger.warning(f"Clicking paused, press {control_key} to start again.")
+            logger.warning(f"Clicking paused, press {colored(control_key, "green")} to start again.")
         else:
             click_thread.start_clicking()
-            logger.success(f"Clicking started, press {control_key} to pause.")
+            logger.success(f"Clicking started, press {colored(control_key, "green")} to pause.")
 
     elif key == stop_key:
         logger.info('Exiting...')
