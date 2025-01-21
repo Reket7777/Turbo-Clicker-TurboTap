@@ -5,43 +5,64 @@ Follow these steps to run the Auto Clicker script:
 ---
 
 ### **1. Install Python**
-- Download and install the latest version of Python from the official website: [python.org](https://www.python.org/).
-- During installation, ensure you check the option **Add Python to PATH**.
+Download and install Python 3.12+ from [python.org](https://www.python.org/).  
+Make sure to check **Add Python to PATH** during installation.
 
 ---
 
-### **2. Install Required Libraries**
-The script requires the `pynput` library. To install it:
-1. Open your terminal (or command prompt).
-2. Run the following command:
-   ```bash
-   pip install pynput
+### **2. Clone the Repository**
+Clone this repository or download the script files.  
+```bash
+git clone https://github.com/Reket7777/Mouse-Clicker.git
+cd <repository_folder>
    ```
-
 ---
 
-### **3. Prepare the Script**
-1. Copy the script code into a text file.
-2. Save the file with a `.py` extension, for example, `mouse_clicker.py`.
-
----
-
-### **4. Run the Script**
-1. Open your terminal or command prompt.
-2. Navigate to the directory where the script is saved:
+### **3. Create a Virtual Environment (Optional)**
+1. Navigate to the directory where the script is saved:
    ```bash
    cd path/to/your/script
    ```
-3. Run the script:
+
+2. Create venv:
+   Windows:
    ```bash
-   python mouse_clicker.py
+   python -m venv venv
+   ```
+   
+   MacOs/Linux
+   ```bash
+   python3 -m venv venv
    ```
 
 ---
 
-### **5. Using the Script**
-- **Start/Stop Clicking**: Press the hotkey `a` to toggle auto-clicking on or off.
-- **Exit the Script**: Press the hotkey `b` to stop the script completely.
+### **4. Activate the virtual environment**
+   Windows:
+   ```bash
+   venv\Scripts\activate
+   ```
+
+   MacOS/Linux:
+   ```bash
+   source venv/bin/activate
+   ```
+
+---
+
+### **5. Install the required libraries from requirements.txt**
+1. Open your terminal or command prompt.
+
+3. Install libraries:
+   Windows:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   MacOS/Linux:
+   ```bash
+   pip3 install -r requirements.txt
+   ```
 
 ---
 
@@ -49,36 +70,42 @@ The script requires the `pynput` library. To install it:
 You can modify the script to suit your needs:
 
 1. **Change the delay between clicks**:
-   - Update the `delay` variable to set the interval in seconds. Example:
+   - Update `min_delay` and `max_delay` in the script to set custom click intervals in seconds.
+   Example:
      ```python
-     delay = 0.5  # 0.5 seconds delay
+      min_delay = 0.5   # min delay in seconds
+      max_delay = 1   # max delay in seconds
      ```
 
 2. **Change the hotkeys**:
    - Modify the `control_key` variable to set a custom key for toggling auto-clicking:
      ```python
-     control_key = KeyCode(char='x')  # Replace 'x' with your desired key
-     ```
-   - Modify the `stop_key` variable to set a custom key for stopping the script:
-     ```python
-     stop_key = KeyCode(char='y')  # Replace 'y' with your desired key
+     control_key = KeyCode(char='a')  # Replace 'a' with your desired key
      ```
 
-3. **Change the mouse button**:
-   - Select left or right mouse button by updating the `button` variable:
+   - Modify the `stop_key` variable to set a custom key for stopping the script:
      ```python
-     button = Button.left  # or Button.right
+     stop_key = KeyCode(char='b')  # Replace 'b' with your desired key
      ```
 
 ---
 
-### **7. Exiting the Script**
+### **7. Run the Script**
+   Windows:
+   ```bash
+   python mouse_clicker.py
+   ```
+
+   MacOS/Linux:
+   ```bash
+   python3 mouse_clicker.py
+   ```
+
+
+
+### **8. Exiting the Script**
 To stop the script:
 - Press the exit hotkey (`b` by default).
 - Alternatively, close the terminal or command prompt.
 
 ---
-
-### **Notes**
-- Ensure the script is used ethically, such as in tasks or games where auto-clickers are permitted.
-- Be cautious when modifying the script to avoid conflicts with other software or settings.
