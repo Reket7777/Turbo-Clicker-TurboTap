@@ -24,7 +24,8 @@ cd <repository_folder>
    cd path/to/your/script
    ```
 
-2. Create venv:
+2. Create venv
+
    Windows:
    ```bash
    python -m venv venv
@@ -54,6 +55,7 @@ cd <repository_folder>
 1. Open your terminal or command prompt.
 
 2. Install libraries:
+
    Windows:
    ```bash
    pip install -r requirements.txt
