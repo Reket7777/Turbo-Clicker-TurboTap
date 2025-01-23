@@ -17,11 +17,12 @@ logger.add(
 )
 
 # ____ delay settings ____
-min_delay = 0.15                    # min delay between clicks in seconds
-max_delay = 0.8                     # max delay between clicks in seconds
+min_delay = 0.2                     # min delay between clicks in seconds
+max_delay = 0.6                     # max delay between clicks in seconds
 pause_interval = 10                 # pause interval in minutes
 min_pause = 10                      # min pause duration in seconds
 max_pause = 30                      # max pause duration in seconds
+
 
 random_delay = random.uniform(min_delay, max_delay)
 delay = random_delay
@@ -46,13 +47,23 @@ class ClickMouse(threading.Thread):
     def stop_clicking(self):
         self.running = False
 
+    def smooth_move(self, x_offset, y_offset, duration=1):
+        steps = 50  # Number of small steps for smooth movement
+        x_step = x_offset / steps
+        y_step = y_offset / steps
+        step_delay = duration / steps
+
+        for _ in range(steps):
+            mouse.move(x_step, y_step)
+            time.sleep(step_delay)
+
     def exit(self):
         self.stop_clicking()
         self.program_running = False
 
     def run(self, pause_interval=pause_interval, min_pause=min_pause, max_pause=max_pause):
         
-        last_pause_time = time.time()             # start time for pause interval
+        last_pause_time = time.time()
         pause_interval = pause_interval * 60      # pause interval in seconds * 60
         
         while self.program_running:
@@ -60,7 +71,14 @@ class ClickMouse(threading.Thread):
                 current_time = time.time()
                 
                 if current_time - last_pause_time >= pause_interval:
-                    pause_duration = random.uniform(min_pause, max_pause)   # random pause duration
+                    pause_duration = random.uniform(min_pause, max_pause)
+                    # Move mouse to a random position
+                    x_offset = random.randint(-50, 50)
+                    y_offset = random.randint(-50, 50)
+                    move_duration = random.uniform(0.5, 1)
+                    self.smooth_move(x_offset, y_offset, move_duration)
+                    logger.debug(f"Mouse moved by ({x_offset}, {y_offset}).")
+
                     logger.info(f"Pausing clicking for {pause_duration:.2f} seconds.")
                     time.sleep(pause_duration)
                     last_pause_time = current_time
