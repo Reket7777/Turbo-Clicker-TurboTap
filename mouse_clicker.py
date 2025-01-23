@@ -17,8 +17,12 @@ logger.add(
 )
 
 # ____ delay settings ____
-min_delay = 0.2                     # min delay in seconds
-max_delay = 0.6                     # max delay in seconds
+min_delay = 0.15                    # min delay between clicks in seconds
+max_delay = 0.8                     # max delay between clicks in seconds
+pause_interval = 10                 # pause interval in minutes
+min_pause = 10                      # min pause duration in seconds
+max_pause = 30                      # max pause duration in seconds
+
 random_delay = random.uniform(min_delay, max_delay)
 delay = random_delay
 
@@ -46,9 +50,21 @@ class ClickMouse(threading.Thread):
         self.stop_clicking()
         self.program_running = False
 
-    def run(self):
+    def run(self, pause_interval=pause_interval, min_pause=min_pause, max_pause=max_pause):
+        
+        last_pause_time = time.time()             # start time for pause interval
+        pause_interval = pause_interval * 60      # pause interval in seconds * 60
+        
         while self.program_running:
             while self.running:
+                current_time = time.time()
+                
+                if current_time - last_pause_time >= pause_interval:
+                    pause_duration = random.uniform(min_pause, max_pause)   # random pause duration
+                    logger.info(f"Pausing clicking for {pause_duration:.2f} seconds.")
+                    time.sleep(pause_duration)
+                    last_pause_time = current_time
+
                 mouse.click(self.button)
                 time.sleep(self.delay)
 
@@ -74,6 +90,7 @@ def on_press(key):
 
 
 with Listener(on_press=on_press) as listener:
+    logger.debug("Mouse clicker is running.")
     logger.info(f"Press {colored(control_key, "green")} to start or pause clicking.")
     logger.info(f"Press {colored(stop_key, "red")} to stop the program.")
     listener.join()
