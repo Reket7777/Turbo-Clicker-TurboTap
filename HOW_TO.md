@@ -12,9 +12,9 @@ Make sure to check **Add Python to PATH** during installation.
 
 ### **2. Clone the Repository**
 Clone this repository or download the script files.  
-```bash
-git clone https://github.com/Reket7777/Mouse-Clicker.git
-cd <repository_folder>
+   ```bash
+   git clone https://github.com/Reket7777/Mouse-Clicker.git
+   cd <repository_folder>
    ```
 ---
 
@@ -69,7 +69,7 @@ cd <repository_folder>
 ---
 
 ### **6. Customizing the Script**
-You can modify the script to suit your needs:
+   You can modify the script to suit your needs:
 
 1. **Change the delay between clicks**:
    - Update `min_delay` and `max_delay` in the script to set custom click intervals in seconds.
@@ -78,8 +78,22 @@ You can modify the script to suit your needs:
       min_delay = 0.5   # min delay in seconds
       max_delay = 1   # max delay in seconds
      ```
+2. **How to Configure Intervals**
 
-2. **Change the hotkeys**:
+   - `pause_interval = 2` - Interval between pauses in **minutes**. Set how often the script should pause.
+   
+   - `min_pause = 10` - Minimum duration of the pause in **seconds**.
+   
+   - `max_pause = 30` - Maximum duration of the pause in **seconds**.
+
+   ### Example Configuration
+   ```python
+   pause_interval = 10  # Pause every 10 minutes
+   min_pause = 10      # Minimum pause duration: 10 seconds
+   max_pause = 30      # Maximum pause duration: 30 seconds
+   ```
+
+3. **Change the hotkeys**:
    - Modify the `control_key` variable to set a custom key for toggling auto-clicking:
      ```python
      control_key = KeyCode(char='a')  # Replace 'a' with your desired key
@@ -106,8 +120,8 @@ You can modify the script to suit your needs:
 
 
 ### **8. Exiting the Script**
-To stop the script:
-- Press the exit hotkey (`b` by default).
-- Alternatively, close the terminal or command prompt.
+   To stop the script:
+   - Press the exit hotkey (`b` by default).
+   - Alternatively, close the terminal or command prompt.
 
 ---
