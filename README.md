@@ -1,4 +1,4 @@
-# Mouse-Clicker
+# Mouse-Clicker for Eclipse TurboTap
 
 ### Title: **Auto Clicker with Hotkeys**
 
