@@ -96,10 +96,10 @@ def on_press(key):
     if key == control_key:
         if click_thread.running:
             click_thread.stop_clicking()
-            logger.warning(f"Clicking paused, press {colored(control_key, "green")} to start again.")
+            logger.warning(f"Clicking paused, press {colored(control_key, 'green')} to start again.")
         else:
             click_thread.start_clicking()
-            logger.success(f"Clicking started, press {colored(control_key, "green")} to pause.")
+            logger.success(f"Clicking started, press {colored(control_key, 'green')} to pause.")
 
     elif key == stop_key:
         logger.info('Exiting...')
@@ -109,6 +109,6 @@ def on_press(key):
 
 with Listener(on_press=on_press) as listener:
     logger.debug("Mouse clicker is running.")
-    logger.info(f"Press {colored(control_key, "green")} to start or pause clicking.")
-    logger.info(f"Press {colored(stop_key, "red")} to stop the program.")
+    logger.info(f"Press {colored(control_key, 'green')} to start or pause clicking.")
+    logger.info(f"Press {colored(stop_key, 'red')} to stop the program.")
     listener.join()
