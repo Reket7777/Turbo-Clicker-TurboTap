@@ -1,6 +1,6 @@
-# Mouse-Clicker for Eclipse TurboTap
+# Turbo-Clicker for Eclipse TurboTap
 
-### Title: **Auto Clicker with Hotkeys**
+### Title: **Turbo Clicker with Hotkeys**
 
 This script is a customizable **auto clicker** that automates mouse clicks with a configurable delay. It allows users to start, stop, and terminate the auto clicker using predefined hotkeys.
 
