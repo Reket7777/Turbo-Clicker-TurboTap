@@ -7,16 +7,16 @@ import sys
 from pynput.mouse import Button, Controller
 from pynput.keyboard import Listener, KeyCode
 from termcolor import colored
-
 from loguru import logger
+
+import config
 
 if platform.system() == "Windows":
     from win10toast import ToastNotifier
 else:
     from AppKit import NSUserNotification, NSUserNotificationCenter
 
-
-# ___ logger settings ___
+# Налаштування логування
 logger.remove()
 logger.add(
     sys.stdout,
@@ -25,25 +25,47 @@ logger.add(
 )
 
 
-# ____ delay settings ____
-min_delay = 0.3                    # min delay between clicks in seconds
-max_delay = 0.4                    # max delay between clicks in seconds
-pause_interval = 0.5               # pause interval in minutes
-min_pause = 5                      # min pause duration in seconds
-max_pause = 10                     # max pause duration in seconds
+total_taps = config.TOTAL_TAPS  # Общая количество кликов
+# Количество циклов, на которые нужно разделить total_taps
+number_of_cycles = config.NUMBER_OF_CYCLES
 
 
-random_delay = random.uniform(min_delay, max_delay)
-delay = random_delay
+min_delay = config.MIN_DELAY    # Минимальная задержка между кликами (секунды)
+max_delay = config.MAX_DELAY    # Максимальная задержка между кликами (секунды)
+# Минимальная длительность паузы между циклами (секунды)
+min_pause = config.MIN_PAUSE
+# Максимальная длительность паузы между циклами (секунды)
+max_pause = config.MAX_PAUSE
 
-# ____ button settings ____
-# system notification True/False(Error with Windows, MacOS - Ok)
-system_notification = False
-button = Button.left                # button to click
-control_key = KeyCode(char='a')     # key to start/pause clicking
-stop_key = KeyCode(char='b')        # key to stop the program
+# Диапазон случайного увеличения задержки (имитация усталости)
+# Минимальное увеличение задержки за клик
+min_fatigue_increase = config.MIN_FATIGUE_INCREASE
+# Максимальное увеличение задержки за клик
+max_fatigue_increase = config.MAX_FATIGUE_INCREASE
 
 
+system_notification = config.SYSTEM_NOTIFICATION
+button = Button.left if config.BUTTON_TYPE == 'left' else Button.right  # Кнопка для клика
+# Клавиша для старта/паузы кликов
+control_key = KeyCode(char=config.CONTROL_KEY)
+stop_key = KeyCode(char=config.STOP_KEY)    # Клавиша для остановки программы
+
+
+# Функция для случайного распределения total_taps на заданное количество циклов
+def partition_taps(total, parts):
+    rand_numbers = [random.random() for _ in range(parts)]
+    total_rand = sum(rand_numbers)
+    parts_values = [int(round(total * (r / total_rand))) for r in rand_numbers]
+    diff = total - sum(parts_values)
+    parts_values[0] += diff
+    return sorted(parts_values, reverse=True)
+
+
+# Автоматическое распределение кликов по циклам
+cycles = partition_taps(total_taps, number_of_cycles)
+logger.info(f"Tap distribution among cycles: {cycles}")
+
+# Уведомление для Windows/MacOS
 if platform.system() == "Windows":
     class WindowsNotifier:
         def __init__(self, title: str, message: str):
@@ -76,31 +98,36 @@ else:
 
 
 class ClickMouse(threading.Thread):
-    def __init__(self, delay, button):
+    def __init__(self, cycles, min_delay, max_delay, button, min_fatigue_increase, max_fatigue_increase):
         super(ClickMouse, self).__init__()
-        self.delay = delay
+        self.cycles = cycles                  # Список количества кликов в каждом цикле
+        self.min_delay = min_delay
+        self.max_delay = max_delay
         self.button = button
-        self.running = False
-        self.program_running = True
+        self.min_fatigue_increase = min_fatigue_increase
+        self.max_fatigue_increase = max_fatigue_increase
+        self.running = False                  # Флаг: клики выполняются или на паузе
+        self.program_running = True           # Флаг работы программы
+        self.current_delay = random.uniform(self.min_delay, self.max_delay)
 
     def start_clicking(self):
         self.running = True
         if system_notification:
-            notifier = sys_notifier("Autoclicker is running!", "Time for coffee! ☕")
+            notifier = sys_notifier(
+                "Turboclicker is running!", "Time for coffee! ☕")
             notifier.run()
 
     def stop_clicking(self):
         self.running = False
         if system_notification:
-            notifier = sys_notifier("Autoclicker stopped!", "Back to work!")
+            notifier = sys_notifier("Turboclicker stopped!", "Back to work!")
             notifier.run()
 
     def smooth_move(self, x_offset, y_offset, duration=1):
-        steps = 50  # Number of small steps for smooth movement
+        steps = 50  # Количество шагов для плавного движения
         x_step = x_offset / steps
         y_step = y_offset / steps
         step_delay = duration / steps
-
         for _ in range(steps):
             mouse.move(x_step, y_step)
             time.sleep(step_delay)
@@ -109,33 +136,65 @@ class ClickMouse(threading.Thread):
         self.stop_clicking()
         self.program_running = False
 
-    def run(self, pause_interval=pause_interval, min_pause=min_pause, max_pause=max_pause):
-        last_pause_time = time.time()
-        pause_interval = pause_interval * 60  # pause interval in seconds * 60
-
-        while self.program_running:
-            while self.running:
-                current_time = time.time()
-
-                if current_time - last_pause_time >= pause_interval:
-                    pause_duration = random.uniform(min_pause, max_pause)
-                    x_offset = random.randint(-200, 150)
-                    y_offset = random.randint(-200, 150)
-                    move_duration = random.uniform(1, 3)
-                    self.smooth_move(x_offset, y_offset, move_duration)
-                    logger.info(f"Mouse moved by ({x_offset}, {y_offset}).")
-
-                    logger.info(
-                        f"Pausing clicking for {pause_duration:.2f} seconds.")
-                    time.sleep(pause_duration)
-                    last_pause_time = current_time
-
+    def run(self):
+        cycle_number = 0
+        for cycle_taps in self.cycles:
+            cycle_number += 1
+            # Засекаем время начала цикла
+            cycle_start_time = time.time()
+            # В начале каждого цикла сбрасываем задержку до случайного значения в диапазоне [min_delay, max_delay]
+            self.current_delay = random.uniform(self.min_delay, self.max_delay)
+            logger.info(
+                f"Starting cycle {cycle_number} with {cycle_taps} taps. Initial delay: {self.current_delay:.3f} sec")
+            for i in range(cycle_taps):
+                # Если кликание поставлено на паузу, ждем продолжения
+                while not self.running and self.program_running:
+                    time.sleep(0.1)
+                if not self.program_running:
+                    return
                 mouse.click(self.button)
-                time.sleep(self.delay)
+                logger.info(
+                    f"Cycle {cycle_number}: performed tap {i+1}/{cycle_taps}")
+                time.sleep(self.current_delay)
+                # Случайное увеличение задержки за клик (в диапазоне min_fatigue_increase - max_fatigue_increase)
+                fatigue_increase = random.uniform(
+                    self.min_fatigue_increase, self.max_fatigue_increase)
+                self.current_delay += fatigue_increase
+            # Засекаем время окончания цикла
+            cycle_end_time = time.time()
+            cycle_duration = cycle_end_time - cycle_start_time
+            # Рассчитываем среднюю скорость: кликов в минуту
+            taps_per_minute = (cycle_taps / cycle_duration) * 60
+            logger.success(
+                f"Cycle {cycle_number} completed in {cycle_duration:.2f} sec. Average speed: {taps_per_minute:.2f} taps/min")
+            # Между циклами делаем случайную паузу, если это не последний цикл
+            if cycle_number < len(self.cycles):
+                pause_duration = random.uniform(min_pause, max_pause)
+                logger.success(
+                    f"Cycle {cycle_number} completed. Pausing for {pause_duration:.2f} seconds before next cycle.")
+                time.sleep(pause_duration)
+
+        logger.success(
+            "All cycles completed. Waiting for user input to continue.")
+        self.stop_clicking()
+        while True:
+            logger.warning(f"Restart Turboclicker? (y/n):")
+            ask = str(input().strip().lower())
+            if ask == '' or ask == 'y':
+                logger.info("Restarting Turboclicker...")
+                logger.info(f"Press {colored(control_key, 'green')} to start")
+                click_thread.run()  # Restart the clicking process
+                break
+            elif ask == 'n':
+                logger.info('Exiting...')
+                click_thread.exit()
+                listener.stop()
+                sys.exit()
 
 
 mouse = Controller()
-click_thread = ClickMouse(delay, button)
+click_thread = ClickMouse(cycles, min_delay, max_delay,
+                          button, min_fatigue_increase, max_fatigue_increase)
 click_thread.start()
 
 
@@ -150,11 +209,10 @@ def on_press(key):
                 click_thread.start_clicking()
                 logger.success(
                     f"Clicking started, press {colored(control_key, 'green')} to pause.")
-
         elif key == stop_key:
             logger.info('Exiting...')
             click_thread.exit()
-            listener.stop()  # Ensure listener is stopped properly
+            listener.stop()  # Остановка слушателя клавиатуры
     except Exception as e:
         logger.error(f"Error in key press handling: {e}")
 
@@ -170,4 +228,4 @@ except KeyboardInterrupt:
     logger.info('Exiting...')
     click_thread.exit()
     listener.stop()
-    sys.exit(0)
+    sys.exit()
