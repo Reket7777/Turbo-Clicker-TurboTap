@@ -1,0 +1,4 @@
+loguru==0.7.3
+pynput==1.8.1
+pyobjc-core==11.0
+termcolor==2.5.0
